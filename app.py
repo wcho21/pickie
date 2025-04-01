@@ -1,5 +1,6 @@
 import streamlit as st
 from content_authed import render_content_authed
+from content_not_authed import render_content_not_authed
 
 st.set_page_config(
     page_title="Pickie",
@@ -8,4 +9,11 @@ st.set_page_config(
 
 st.title("Pickie")
 
-render_content_authed()
+if "authed" not in st.session_state:
+    st.session_state["authed"] = False
+authed = st.session_state["authed"]
+
+if authed:
+    render_content_authed()
+else:
+    render_content_not_authed()
