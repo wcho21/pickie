@@ -1,5 +1,6 @@
 import streamlit as st
-import time
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage, SystemMessage
 
 st.set_page_config(
     page_title="Pickie",
@@ -9,14 +10,25 @@ st.set_page_config(
 st.title("Pickie")
 
 # configs
+openai_api_key = st.secrets["OPENAI_API_KEY"]
 avatars = {
     "user": "🧑‍💻",
     "ai": "😒"
 }
 
 # initialize
+model = ChatOpenAI(api_key=openai_api_key, temperature=0.6, streaming=True)
 if "message_history" not in st.session_state:
     st.session_state["message_history"] = []
+
+# business logic
+def generate_response(user_message):
+    messages = [
+        SystemMessage("Answer the message."),
+        HumanMessage(user_message),
+    ]
+    response = model.invoke(messages)
+    return response.content
 
 def store_user_message(message):
     store_message(message, "user")
@@ -52,8 +64,6 @@ if message:
     store_user_message(message)
     render_user_message(message)
 
-    time.sleep(1)
-
-    ai_message="Some AI response"
+    ai_message = generate_response(message)
     store_ai_message(ai_message)
     render_ai_message(ai_message)
