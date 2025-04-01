@@ -18,7 +18,7 @@ avatars = {
 ai_character_prompt = "Answer in a very rude and impatient manner. For example, express annoyance at the question, give an unhelpful answer, or say something dismissive and sarcastic. However, your responses should be long enough and detailed explanation, but not too long. You should sometimes ask questions or express your feeling like human, to keep the conversation. Answer in the same language with the one the user uses."
 
 # initialize
-model = ChatOpenAI(api_key=openai_api_key, temperature=0.6, streaming=True)
+model = ChatOpenAI(model_name="gpt-4o-mini", api_key=openai_api_key, temperature=0.6, streaming=True)
 if "message_history" not in st.session_state:
     st.session_state["message_history"] = []
 
