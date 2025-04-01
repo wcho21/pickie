@@ -1,6 +1,6 @@
 import streamlit as st
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.prompts import ChatPromptTemplate
 
 st.set_page_config(
     page_title="Pickie",
@@ -24,11 +24,12 @@ if "message_history" not in st.session_state:
 
 # business logic
 def generate_response_stream(user_message):
-    messages = [
-        SystemMessage(ai_character_prompt),
-        HumanMessage(user_message),
-    ]
-    response = model.stream(messages)
+    prompt = ChatPromptTemplate([
+        ("system", ai_character_prompt),
+        ("human", "{user_message}"),
+    ])
+    chain = prompt | model
+    response = chain.stream({ "user_message": user_message })
     return response
 
 def store_user_message(message):
