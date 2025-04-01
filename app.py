@@ -1,6 +1,9 @@
 import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts.chat import MessagesPlaceholder
+from langchain_core.runnables.passthrough import RunnablePassthrough
+from langchain.memory import ConversationSummaryBufferMemory
 
 st.set_page_config(
     page_title="Pickie",
@@ -21,14 +24,19 @@ ai_character_prompt = "Answer in a very rude and impatient manner. For example, 
 model = ChatOpenAI(model_name="gpt-4o-mini", api_key=openai_api_key, temperature=0.6, streaming=True)
 if "message_history" not in st.session_state:
     st.session_state["message_history"] = []
+if "conversation_memory" not in st.session_state:
+    st.session_state["conversation_memory"] = ConversationSummaryBufferMemory(llm=model, max_token_limit=200, return_messages=True)
+conversation_memory = st.session_state["conversation_memory"]
 
 # business logic
 def generate_response_stream(user_message):
     prompt = ChatPromptTemplate([
         ("system", ai_character_prompt),
+        MessagesPlaceholder(variable_name="memory"),
         ("human", "{user_message}"),
     ])
-    chain = prompt | model
+    load_memory = lambda _: conversation_memory.load_memory_variables({})["history"]
+    chain = RunnablePassthrough.assign(memory=load_memory) | prompt | model
     response = chain.stream({ "user_message": user_message })
     return response
 
@@ -79,3 +87,4 @@ if message:
     ai_message = generate_response_stream(message)
     streamed_message = render_ai_message_stream(ai_message)
     store_ai_message(streamed_message)
+    conversation_memory.save_context({"input": message}, {"output": streamed_message})
