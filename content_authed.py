@@ -45,6 +45,9 @@ def store_message(message, role):
 def render_user_message(message):
     render_message(message, "user")
 
+def render_ai_message(message):
+    render_message(message, "ai")
+
 def render_ai_message_stream(stream):
     streamed_message = render_message_stream(stream, "ai")
     return streamed_message
@@ -71,7 +74,9 @@ def render_message_history():
         render_message(message, role)
 
 def render_content_authed():
+    render_ai_message("...")
     message = st.chat_input("Send a message")
+
     if message:
         render_message_history()
 
